@@ -1,0 +1,89 @@
+station:
+
+  station_id: "SSN_001"
+
+  station_name: "Delhi_Metro_Station_01"
+
+  latitude: 28.6139
+
+  longitude: 77.2090
+
+  elevation: 216
+
+
+sensor:
+
+  sampling_rate: 200
+
+  adc_gain: 1
+
+  adc_channel: 0
+
+  threshold_pga: 0.08
+
+  stalta_threshold: 3.5
+
+  frequency_low: 0.5
+
+  frequency_high: 20.0
+
+
+buffer:
+
+  pre_event_seconds: 30
+
+  event_seconds: 60
+
+  post_event_seconds: 30
+
+
+gps:
+
+  enabled: true
+
+  serial_port: "/dev/ttyUSB0"
+
+  baud_rate: 9600
+
+
+mqtt:
+
+  broker_ip: "192.168.1.100"
+
+  broker_port: 1883
+
+  keepalive: 60
+
+  qos: 1
+
+  event_topic: "earthquake/events"
+
+  health_topic: "earthquake/health"
+
+
+health:
+
+  report_interval_seconds: 30
+
+
+storage:
+
+  database_path: "local_events.db"
+
+  waveform_directory: "waveforms"
+
+
+logging:
+
+  log_level: "INFO"
+
+  log_file: "logs/ssn.log"
+
+
+system:
+
+  max_retry_count: 5
+
+  retry_delay_seconds: 5
+
+  watchdog_timeout_seconds: 60

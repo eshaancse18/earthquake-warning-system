@@ -1,0 +1,121 @@
+# ==========================================================
+# CENTRAL RECEIVING SERVER (CRS) CONFIGURATION
+# ==========================================================
+
+server:
+
+  name: "Delhi Metro Central Receiving Server"
+
+  host: "0.0.0.0"
+
+  port: 8000
+
+
+# ==========================================================
+# MQTT SETTINGS
+# ==========================================================
+
+mqtt:
+
+  broker: "localhost"
+
+  port: 1883
+
+  username: ""
+
+  password: ""
+
+  keepalive: 60
+
+  qos: 1
+
+  event_topic: "earthquake/events"
+
+  health_topic: "earthquake/health"
+
+  alert_topic: "earthquake/alerts"
+
+
+# ==========================================================
+# DATABASE
+# ==========================================================
+
+database:
+
+  host: "localhost"
+
+  port: 5432
+
+  username: "postgres"
+
+  password: "postgres"
+
+  database: "earthquake_db"
+
+
+# ==========================================================
+# EVENT VOTING
+# ==========================================================
+
+voting:
+
+  # minimum_triggered_stations: 3
+  minimum_triggered_stations: 1
+
+  maximum_time_difference_seconds: 5
+
+  minimum_confidence: 0.75
+
+
+# ==========================================================
+# MAGNITUDE ESTIMATION
+# ==========================================================
+
+magnitude:
+
+  attenuation_factor: 1.20
+
+  minimum_pga: 0.05
+
+  maximum_distance_km: 300
+
+
+# ==========================================================
+# ALERTING
+# ==========================================================
+
+alert:
+
+  minimum_magnitude: 3.5
+
+  send_sms: false
+
+  send_email: false
+
+  activate_metro_warning: true
+
+
+# ==========================================================
+# STORAGE
+# ==========================================================
+
+storage:
+
+  waveform_directory: "./waveforms"
+
+  event_directory: "./events"
+
+  log_directory: "./logs"
+
+
+# ==========================================================
+# API
+# ==========================================================
+
+api:
+
+  title: "Earthquake Warning CRS"
+
+  version: "1.0"
+
+  debug: true

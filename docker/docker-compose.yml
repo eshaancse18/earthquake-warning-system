@@ -1,0 +1,155 @@
+version: "3.9"
+
+services:
+
+  postgres:
+
+    image: postgres:16
+
+    container_name: crs_postgres
+
+    restart: unless-stopped
+
+    environment:
+
+      POSTGRES_USER: earthquake
+
+      POSTGRES_PASSWORD: earthquake_password
+
+      POSTGRES_DB: earthquake_db
+
+    ports:
+
+      - "5432:5432"
+
+    volumes:
+
+      - postgres_data:/var/lib/postgresql/data
+
+      - ./postgres/init.sql:/docker-entrypoint-initdb.d/init.sql
+
+    healthcheck:
+
+      test:
+        [
+          "CMD-SHELL",
+          "pg_isready -U earthquake -d earthquake_db"
+        ]
+
+      interval: 10s
+
+      timeout: 5s
+
+      retries: 10
+
+    networks:
+
+      - earthquake_network
+
+  mosquitto:
+
+    image: eclipse-mosquitto:2
+
+    container_name: crs_mosquitto
+
+    restart: unless-stopped
+
+    ports:
+
+      - "1883:1883"
+
+      - "9001:9001"
+
+    volumes:
+
+      - ./mosquitto/mosquitto.conf:/mosquitto/config/mosquitto.conf
+
+      - mosquitto_data:/mosquitto/data
+
+      - mosquitto_logs:/mosquitto/log
+
+    healthcheck:
+
+      test:
+        [
+          "CMD",
+          "mosquitto_sub",
+          "-h",
+          "localhost",
+          "-t",
+          "$SYS/#",
+          "-C",
+          "1"
+        ]
+
+      interval: 30s
+
+      timeout: 10s
+
+      retries: 5
+
+    networks:
+
+      - earthquake_network
+
+  crs:
+
+    build:
+
+      context: ..
+
+      dockerfile: Dockerfile
+
+    container_name: earthquake_crs
+
+    restart: unless-stopped
+
+    depends_on:
+
+      postgres:
+
+        condition: service_healthy
+
+      mosquitto:
+
+        condition: service_started
+
+    environment:
+
+      DATABASE_URL: postgresql+psycopg2://earthquake:earthquake_password@postgres:5432/earthquake_db
+
+      MQTT_BROKER_IP: mosquitto
+
+      MQTT_BROKER_PORT: 1883
+
+      MQTT_KEEPALIVE: 60
+
+    ports:
+
+      - "8000:8000"
+
+    command:
+
+      [
+        "python",
+        "-m",
+        "crs.main"
+      ]
+
+    networks:
+
+      - earthquake_network
+
+networks:
+
+  earthquake_network:
+
+    driver: bridge
+
+volumes:
+
+  postgres_data:
+
+  mosquitto_data:
+
+  mosquitto_logs:
