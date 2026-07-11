@@ -760,17 +760,15 @@ class MQTTClient(threading.Thread):
                 if not self.connected:
 
                     self.logger.logger.warning(
-                        (
-                            "MQTT_RECONNECTING"
-                        )
+                        "MQTT_RECONNECTING"
                     )
 
-                    time.sleep(5)
+                    if self.stop_event.wait(5):
+                        break
 
                     self.connect()
 
                     continue
-
                 # ==========================
                 # SEND QUEUED PACKETS
                 # ==========================

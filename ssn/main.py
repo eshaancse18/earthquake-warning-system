@@ -40,14 +40,14 @@ if str(PROJECT_ROOT) not in sys.path:
 # Optional hardware imports
 # ---------------------------------------------------------------------
 
-ADXL355Reader = None
+ADXL345Reader = None
 GPSReader = None
 
 try:
-    from acquisition.adxl355_reader import ADXL355Reader as _ADXL355Reader
-    ADXL355Reader = _ADXL355Reader
+    from acquisition.adxl345_reader import ADXL345Reader as _ADXL345Reader
+    ADXL345Reader = _ADXL345Reader
 except Exception:
-    ADXL355Reader = None
+    ADXL345Reader = None
 
 try:
     from acquisition.gps_reader import GPSReader as _GPSReader
@@ -445,29 +445,39 @@ def build_sensor_reader(sample_queue, sampling_rate: int, logger):
             sampling_rate=sampling_rate,
         )
 
-    if ADXL355Reader is None:
-        logger.warning("ADXL355Reader import unavailable; using simulator.")
+    if ADXL345Reader is None:
+        logger.warning("ADXL345Reader import unavailable; using simulator.")
         return SimulatedSensorReader(
             sample_queue=sample_queue,
             sampling_rate=sampling_rate,
         )
 
     try:
-        reader = ADXL355Reader(
+        reader = ADXL345Reader(
             sample_queue=sample_queue,
             sampling_rate=sampling_rate,
-            spi_bus=int(os.getenv("SSN_SPI_BUS", "0")),
-            spi_device=int(os.getenv("SSN_SPI_DEVICE", "0")),
+            i2c_bus=int(os.getenv("SSN_I2C_BUS", "1")),
+            i2c_address=int(
+                os.getenv("SSN_I2C_ADDRESS", "0x53"),
+                0,
+            ),
         )
-        logger.info("Real ADXL355 sensor reader initialized.")
+
+        logger.info(
+            "Real ADXL345 sensor reader initialized."
+        )
+
         return reader
+
     except Exception as exc:
-        logger.warning(f"Sensor hardware unavailable; using simulator ({exc}).")
+        logger.warning(
+            f"Sensor hardware unavailable; using simulator ({exc})."
+        )
+
         return SimulatedSensorReader(
             sample_queue=sample_queue,
             sampling_rate=sampling_rate,
         )
-
 
 def resolve_mqtt_broker(config) -> str:
     env_broker = os.getenv("MQTT_BROKER_IP")
@@ -600,10 +610,8 @@ def main() -> int:
         sensor_manager,
         event_forwarder,
         health_monitor,
-        # COMMENT BELOW BEFORE RUNNING ACTUAL
-        simulation_trigger,
+        # simulation_trigger,
     ]
-
     # Start connection / producers first.
     try:
         if hasattr(gps_reader, "start"):
@@ -646,14 +654,16 @@ def main() -> int:
     logger.info("Shutdown requested, stopping threads...")
 
     stop_component(health_monitor)
-    stop_component(event_forwarder)
-    stop_component(sensor_manager)
-    stop_component(mqtt_client)
 
-    # COMMENT BELOW LINE
-    stop_component(simulation_trigger)
+    # Stop producers before consumers
     stop_component(sensor_reader)
     stop_component(gps_reader)
+
+    stop_component(sensor_manager)
+    stop_component(event_forwarder)
+    stop_component(mqtt_client)
+
+    # stop_component(simulation_trigger)
 
     for thread in threads:
         try:

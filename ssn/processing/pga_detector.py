@@ -3,7 +3,7 @@ from datetime import datetime
 from threading import Lock
 from typing import Dict
 import numpy as np
-
+STANDARD_GRAVITY = 9.80665
 
 class PGADetector:
     """
@@ -94,8 +94,14 @@ class PGADetector:
 
         with self.lock:
 
-            self.samples.append(
+            acceleration_g = (
                 float(acceleration)
+                /
+                STANDARD_GRAVITY
+            )
+
+            self.samples.append(
+                acceleration_g
             )
 
             if len(self.samples) == 0:
