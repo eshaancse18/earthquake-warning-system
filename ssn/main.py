@@ -486,7 +486,8 @@ def resolve_mqtt_broker(config) -> str:
 
     # The checked-in config points to a LAN address; for local development
     # default to localhost unless the user explicitly overrides it.
-    return "localhost"
+    # return "localhost"
+    return config.mqtt.broker_ip
 
 
 def stop_component(component: Any) -> None:
