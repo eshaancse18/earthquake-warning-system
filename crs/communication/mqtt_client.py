@@ -187,4 +187,23 @@ class MQTTClient:
             )
 
             if self.health_callback:
-                self.health_callback(payload)
+
+                health_report = {
+                    "station_id": payload.get("station_id"),
+
+                    "cpu_usage": payload.get("payload", {}).get("cpu_usage"),
+
+                    "memory_usage": payload.get("payload", {}).get("ram_usage"),
+
+                    "disk_usage": payload.get("payload", {}).get("disk_usage"),
+
+                    "cpu_temperature": payload.get("payload", {}).get("temperature"),
+
+                    "gps_locked": 1 if payload.get("payload", {}).get("gps_status") == "LOCKED" else 0,
+
+                    "sensor_status": 1,
+
+                    "mqtt_connected": 1 if payload.get("payload", {}).get("network_status") == "CONNECTED" else 0
+                }
+
+                self.health_callback(health_report)
